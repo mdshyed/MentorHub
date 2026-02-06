@@ -1,0 +1,194 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import mentorAPI from "../apiManger/mentor";
+import { Spin } from "antd";
+import {
+  AiFillFacebook,
+  AiFillGithub,
+  AiFillInstagram,
+  AiFillLinkedin,
+  AiFillTwitterCircle,
+} from "react-icons/ai";
+import ServiceCardUserSide from "../components/ServiceCardUserSide";
+import Layout from "../components/Layout";
+import { BiErrorAlt } from "react-icons/bi";
+
+const MentorDetails = () => {
+  const { username } = useParams();
+  const [mentor, setMentor] = useState();
+  const [services, setServices] = useState();
+  const [mentorLoading, setMentorLoading] = useState(true); // Separate loading state for mentor
+  const [servicesLoading, setServicesLoading] = useState(true); // Separate loading state for services
+
+  useEffect(() => {
+    const fetchMentorDetails = async () => {
+      try {
+        setMentorLoading(true);
+        setServicesLoading(true);
+        console.log("Fetching mentor details for:", username);
+        const response = await mentorAPI.getMentorByUsername(username);
+        console.log("Mentor response:", response?.data);
+        setMentor(response?.data?.mentor);
+        setMentorLoading(false);
+        
+        const servicesData = response?.data?.services || [];
+        console.log("Services received:", servicesData);
+        setServices(servicesData);
+        setServicesLoading(false);
+      } catch (error) {
+        console.error("Error fetching mentor details:", error);
+        console.error("Error response:", error.response?.data);
+        setMentorLoading(false);
+        setServicesLoading(false);
+      }
+    };
+
+    fetchMentorDetails();
+  }, [username]);
+
+  return (
+    <Layout>
+      <div className="h-screen mx-auto">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Mentor's Profile */}
+          <div className="col-span-1 p-6">
+            {mentorLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Spin size="large" />
+              </div>
+            ) : mentor ? (
+              <>
+                <img
+                  src={
+                    mentor?.photoUrl ||
+                    `https://ui-avatars.com/api?name=${mentor?.name}`
+                  }
+                  alt={`${mentor?.name}'s avatar`}
+                  className="w-48 h-48 mx-auto border rounded-full"
+                />
+                <h2 className="mt-4 text-3xl font-bold text-center">
+                  {mentor?.name}
+                </h2>
+                <p className="mt-2 text-center text-gray-600">
+                  {mentor?.profile?.title}
+                </p>
+                <div className="flex justify-center mt-4">
+                  {mentor?.profile?.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 mx-1 text-xs bg-gray-100 rounded-full"
+                    >
+                      {tag || "Tags"}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 text-center text-gray-500">
+                  {mentor?.profile?.bio || "Mentor bio"}
+                </p>
+                <h3 className="mt-8 text-lg font-semibold text-center">
+                  Connect with me
+                </h3>
+                <div className="flex justify-center mt-4 space-x-4">
+                  {mentor?.profile?.social?.linkedin && (
+                    <a
+                      href={mentor.profile.social.linkedin.startsWith('http') ? mentor.profile.social.linkedin : `https://${mentor.profile.social.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <AiFillLinkedin className="text-3xl text-blue-600" />
+                    </a>
+                  )}
+                  {mentor?.profile?.social?.github && (
+                    <a
+                      href={mentor.profile.social.github.startsWith('http') ? mentor.profile.social.github : `https://${mentor.profile.social.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <AiFillGithub className="text-3xl text-gray-800" />
+                    </a>
+                  )}
+                  {mentor?.profile?.social?.twitter && (
+                    <a
+                      href={mentor.profile.social.twitter.startsWith('http') ? mentor.profile.social.twitter : `https://${mentor.profile.social.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <AiFillTwitterCircle className="text-3xl text-blue-400" />
+                    </a>
+                  )}
+                  {mentor?.profile?.social?.facebook && (
+                    <a
+                      href={mentor.profile.social.facebook.startsWith('http') ? mentor.profile.social.facebook : `https://${mentor.profile.social.facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <AiFillFacebook className="text-3xl text-blue-700" />
+                    </a>
+                  )}
+                  {mentor?.profile?.social?.instagram && (
+                    <a
+                      href={mentor.profile.social.instagram.startsWith('http') ? mentor.profile.social.instagram : `https://${mentor.profile.social.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <AiFillInstagram className="text-3xl text-pink-500" />
+                    </a>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p>Mentor not found.</p>
+            )}
+          </div>
+
+          {/* Mentor's Services */}
+          <div className="col-span-2 p-6 h-screen bg-[#F5F5F5]">
+            <h3 className="mb-4 text-2xl font-bold">Book a Session</h3>
+
+            {servicesLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Spin size="large" />
+              </div>
+            ) : services && services.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {services.map((service) => (
+                  <ServiceCardUserSide
+                    username={mentor?.username}
+                    service={service}
+                    key={service?._id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-700">
+                <BiErrorAlt className="w-24 h-24 mb-4 text-blue-500" />
+                <h3 className="mb-2 text-xl font-semibold">
+                  No Services Available
+                </h3>
+                <p className="mb-6 text-lg text-center text-gray-500 max-w-md">
+                  {mentor ? (
+                    <>
+                      This mentor hasn't created any active services yet.
+                      <br />
+                      Services need to be active to be visible to students.
+                    </>
+                  ) : (
+                    "It seems like there are no services available at the moment. Please check back later!"
+                  )}
+                </p>
+                <button
+                  className="px-6 py-3 text-white transition-colors bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default MentorDetails;
