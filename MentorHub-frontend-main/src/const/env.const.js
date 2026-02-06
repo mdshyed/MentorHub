@@ -4,8 +4,7 @@ let RAZORPAY_KEY_ID = process.env.REACT_APP_RAZORPAY_KEY_ID;
 
 // Fallback: If not loaded from env, try to use a default test key (for development only)
 if (!RAZORPAY_KEY_ID && process.env.NODE_ENV === 'development') {
-  // This is a fallback - ideally should come from .env
-  RAZORPAY_KEY_ID = "rzp_test_SCZ7CA4FMMJA6r";
+ 
   console.warn('⚠️ Using fallback Razorpay key. Please ensure REACT_APP_RAZORPAY_KEY_ID is set in .env file.');
 }
 
@@ -19,7 +18,7 @@ if (process.env.NODE_ENV === 'development') {
   if (!RAZORPAY_KEY_ID) {
     console.error('❌ REACT_APP_RAZORPAY_KEY_ID is not set. Please:');
     console.error('   1. Check .env file exists in MentorHub-frontend-main folder');
-    console.error('   2. Verify it contains: REACT_APP_RAZORPAY_KEY_ID=rzp_test_SCZ7CA4FMMJA6r');
+    console.error('   2. Verify it contains: REACT_APP_RAZORPAY_KEY_ID');
     console.error('   3. Restart the React development server (npm start)');
   }
 }
