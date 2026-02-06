@@ -19,7 +19,7 @@ const Footer = () => {
               LinkedIn
             </a>
           </p>
-          <p className="mt-4">© 2024 MentorHub. All Rights Reserved.</p>
+          <p className="mt-4">© 2026 MentorHub. All Rights Reserved.</p>
         </div>
       </footer>
     </div>
