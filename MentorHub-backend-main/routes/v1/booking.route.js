@@ -6,6 +6,7 @@ const validate = require("../../middleware/validate");
 const auth = require("../../middleware/auth");
 const {
   initiateBookingValidation,
+  verifyPaymentValidation,
 } = require("../../validations/booking.validation");
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.get(
 router.post(
   "/verify-payment",
   auth.protect,
+  validate(verifyPaymentValidation),
   asyncHandler(bookingController.verifyPayment)
 );
 

@@ -3,7 +3,6 @@ import { Spin } from "antd"; // Import the Spin component from antd
 import useMentorStore from "../store/mentors";
 import MentorCard from "../components/MentorCard";
 import mentorAPI from "../apiManger/mentor";
-import DashboardNavbar from "../components/DashboardNavbar";
 import Layout from "../components/Layout";
 
 const AllMentors = () => {

@@ -7,6 +7,13 @@ const config = require("../config");
 const initiateBookingAndPayment = async (req, res, next) => {
   const { dateAndTime, serviceId } = req.body;
 
+  if (!config.razorpay?.key_id || !config.razorpay?.key_secret) {
+    return res.status(httpStatus.internalServerError).json({
+      success: false,
+      message: "Payment gateway not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env",
+    });
+  }
+
   const service = await serviceService.getServiceById(serviceId);
 
   // Create a new booking
@@ -110,7 +117,12 @@ const verifyPayment = async (req, res, next) => {
     }
 
     // Verify payment with Razorpay (optional - for production)
-    // For development, we'll trust the payment ID from frontend
+    if (!config.razorpay?.key_id || !config.razorpay?.key_secret) {
+      return res.status(httpStatus.internalServerError).json({
+        success: false,
+        message: "Payment gateway not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env",
+      });
+    }
     const RazorpayInstance = new Razorpay(config.razorpay);
     
     try {
@@ -119,9 +131,10 @@ const verifyPayment = async (req, res, next) => {
       
       if (payment.status === "captured" || payment.status === "authorized") {
         // Payment is successful, update booking
+        const duration = booking.service?.duration ?? 30;
         const zoomMeeting = await require("../services/zoom.service").createScheduledZoomMeeting(
           booking.dateAndTime,
-          booking.service.duration
+          duration
         );
 
         const updatedBooking = await bookingService.updateBookingById(bookingId, {
@@ -166,9 +179,10 @@ const verifyPayment = async (req, res, next) => {
       // In production, you should handle this more strictly
       if (process.env.NODE_ENV === "development") {
         console.log("Development mode: Confirming booking without Razorpay verification");
+        const duration = booking.service?.duration ?? 30;
         const zoomMeeting = await require("../services/zoom.service").createScheduledZoomMeeting(
           booking.dateAndTime,
-          booking.service.duration
+          duration
         );
 
         await bookingService.updateBookingById(bookingId, {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Form, Input, TimePicker, Card, message, Spin, Switch } from "antd";
+import { Button, Form, TimePicker, Card, Spin } from "antd";
 import moment from "moment";
 import Dashboard from "./dashboard";
 import availabilityAPI from "../../apiManger/availability";
@@ -29,6 +29,7 @@ const Schedule = () => {
     } else {
       setFetching(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchAvailability = async () => {

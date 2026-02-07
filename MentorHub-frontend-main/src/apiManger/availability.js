@@ -18,9 +18,10 @@ const updateAvailability = async (availabilityData) => {
   return await AxiosInstances.put("/availability", availabilityData);
 };
 
-export default { 
+const availabilityAPI = {
   getMentorAvailability,
   getAvailability,
   createAvailability,
   updateAvailability,
 };
+export default availabilityAPI;

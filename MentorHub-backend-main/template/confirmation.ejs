@@ -75,7 +75,11 @@
         </p>
         <p>Here is your meeting link:</p>
         <p>
+          <% if (meetingLink) { %>
           <strong><a href="<%= meetingLink %>">Join the Meeting</a></strong>
+          <% } else { %>
+          Check your bookings page for the meeting link.
+          <% } %>
         </p>
         <p><strong>Meeting Date:</strong> <%= date %></p>
         <p><strong>Meeting Time:</strong> <%= time %></p>

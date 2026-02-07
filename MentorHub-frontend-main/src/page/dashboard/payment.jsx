@@ -17,6 +17,7 @@ const Payment = () => {
     if (user) {
       fetchPaymentHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchPaymentHistory = async () => {

@@ -31,6 +31,7 @@ const Booking = () => {
 
   useEffect(() => {
     fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter bookings based on active tab

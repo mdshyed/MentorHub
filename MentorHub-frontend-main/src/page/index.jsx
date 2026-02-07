@@ -1112,15 +1112,15 @@ const Home = () => {
           <div className="max-w-6xl mx-auto text-center">
             <p>Follow us on social media for updates and mentorship tips!</p>
             <p className="mt-4">
-              <a href="#" className="hover:text-[#00DFBD]">
+              <a href="/" className="hover:text-[#00DFBD]">
                 Facebook
               </a>{" "}
               |{" "}
-              <a href="#" className="hover:text-[#00DFBD]">
+              <a href="/" className="hover:text-[#00DFBD]">
                 Twitter
               </a>{" "}
               |{" "}
-              <a href="#" className="hover:text-[#00DFBD]">
+              <a href="/" className="hover:text-[#00DFBD]">
                 LinkedIn
               </a>
             </p>

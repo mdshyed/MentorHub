@@ -13,12 +13,12 @@ import Layout from "../components/Layout";
 
 const Booking = () => {
   const navigate = useNavigate();
-  const { username, id } = useParams();
+  const { id } = useParams();
   const [serviceData, setServiceData] = useState(null);
   const [mentorAvailability, setMentorAvailability] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [loadingService, setLoadingService] = useState(false);
+  const [, setLoadingService] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
 
@@ -57,6 +57,7 @@ const Booking = () => {
 
   useEffect(() => {
     getServiceData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const onBookServiceClick = async () => {

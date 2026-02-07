@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
 module.exports = {
   PORT: process.env.PORT || 9900,
@@ -27,7 +28,7 @@ module.exports = {
       user: process.env.SMTP_USERNAME,
       pass: process.env.SMTP_PASSWORD,
     },
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || process.env.SMTP_USERNAME,
   },
   razorpay: {
     key_id: process.env.RAZORPAY_KEY_ID,
