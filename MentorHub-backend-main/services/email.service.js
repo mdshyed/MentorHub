@@ -4,8 +4,9 @@ const nodemailer = require("nodemailer");
 const config = require("../config");
 
 const isEmailConfigured = () => {
-  const { host, port, auth, from } = config.email || {};
+  const { host, port, auth } = config.email || {};
   const portValid = typeof port === "number" && port > 0;
+  const from = config.email?.from || config.email?.auth?.user;
   const ok = !!(host && portValid && auth?.user && auth?.pass && from);
   if (!ok) {
     const missing = [];
@@ -13,8 +14,8 @@ const isEmailConfigured = () => {
     if (!portValid) missing.push("SMTP_PORT");
     if (!auth?.user) missing.push("SMTP_USERNAME");
     if (!auth?.pass) missing.push("SMTP_PASSWORD");
-    if (!from && !auth?.user) missing.push("EMAIL_FROM");
-    if (missing.length) console.warn("Email not configured. Missing:", missing.join(", "));
+    if (!from) missing.push("EMAIL_FROM or SMTP_USERNAME");
+    if (missing.length) console.warn("[Email] Not configured. Missing:", missing.join(", "));
   }
   return ok;
 };
@@ -25,6 +26,7 @@ const createTransport = () => {
   if (host && host.toLowerCase().includes("gmail")) {
     return nodemailer.createTransport({
       service: "gmail",
+      pool: false,
       auth: { user: auth?.user, pass: auth?.pass },
     });
   }
@@ -57,8 +59,12 @@ const sendEmail = async (to, subject, html) => {
     return false;
   }
   try {
-    // Gmail requires "from" to match auth user
-    const fromAddr = config.email.from;
+    // Gmail requires "from" to match auth user; fallback to SMTP_USERNAME
+    const fromAddr = config.email.from || config.email.auth?.user;
+    if (!fromAddr) {
+      console.error("Email send failed: no from address (set EMAIL_FROM or SMTP_USERNAME)");
+      return false;
+    }
     const msg = { from: fromAddr, to, subject, html };
     await Promise.race([
       transport.sendMail(msg),
@@ -77,7 +83,11 @@ const sendEmail = async (to, subject, html) => {
 };
 
 const sendConfirmationMail = async (to, name, meetingLink, date, time) => {
-  console.log("Attempting to send confirmation email to:", to);
+  console.log("[Email] Attempting to send confirmation to:", to);
+  if (!isEmailConfigured()) {
+    console.warn("[Email] Skipped - SMTP not configured");
+    return false;
+  }
   const subject = "Booking Confirmation - MentorHub";
   const template = path.join(__dirname, "../template/confirmation.ejs");
   const data = await ejs.renderFile(template, {
@@ -86,7 +96,9 @@ const sendConfirmationMail = async (to, name, meetingLink, date, time) => {
     date: date || "",
     time: time || "",
   });
-  return sendEmail(to, subject, data);
+  const sent = await sendEmail(to, subject, data);
+  if (sent) console.log("[Email] Confirmation sent successfully to:", to);
+  return sent;
 };
 
 module.exports = {
