@@ -1,11 +1,8 @@
 MentorHub is a React-based web application that connects mentors and mentees through a clean and user-friendly interface.
 
 
-  Tech Stack
+  Tech Stack:
 	•	React.js
-	•	JavaScript
-	•	HTML
-	•	CSS / Tailwind CSS
 	•	Node.js
 	•	Express.js
 	•	MongoDB
