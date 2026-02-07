@@ -11,29 +11,31 @@ async function getZoomAuthToken() {
       `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${config.zoom.accountId}`,
       {},
       {
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
+        headers: { Authorization: `Basic ${auth}` },
+        timeout: 8000,
       }
     );
-
     return response.data.access_token;
   } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
+    console.error("Zoom auth error:", error.response?.data || error.message);
+    return null;
   }
 }
 
+const ZOOM_TIMEOUT = 8000;
+
 const createScheduledZoomMeeting = async (startTime, duration) => {
-  try {
+  const doCreate = async () => {
     const accessToken = await getZoomAuthToken();
+    if (!accessToken) return null;
     const response = await axios.post(
       `https://api.zoom.us/v2/users/me/meetings`,
       {
-        topic: "Scheduled Meeting", // Meeting topic
-        type: 2, // 2 = Scheduled meeting
-        start_time: startTime, // Start time in ISO 8601 format (e.g., '2024-10-22T14:00:00Z')
-        duration: duration, // Duration in minutes
-        timezone: "Asia/Kolkata", // Set the timezone
+        topic: "Scheduled Meeting",
+        type: 2,
+        start_time: startTime,
+        duration: duration,
+        timezone: "Asia/Kolkata",
         agenda: "This is a scheduled meeting.",
         settings: {
           host_video: true,
@@ -48,15 +50,25 @@ const createScheduledZoomMeeting = async (startTime, duration) => {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
+        timeout: ZOOM_TIMEOUT,
       }
     );
+    return response.data.join_url;
+  };
 
-    return response.data.join_url; // Return the meeting join URL
+  try {
+    return await Promise.race([
+      doCreate(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Zoom API timeout")), ZOOM_TIMEOUT)
+      ),
+    ]);
   } catch (error) {
     console.error(
       "Error creating Zoom meeting:",
-      error.response ? error.response.data : error.message
+      error.response?.data || error.message
     );
+    return null;
   }
 };
 

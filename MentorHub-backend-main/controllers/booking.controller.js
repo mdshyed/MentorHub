@@ -131,19 +131,20 @@ const verifyPayment = async (req, res, next) => {
           orderId: orderId,
         });
 
-        // Send confirmation email
-        try {
-          const updatedBookingWithUser = await bookingService.getBookingById(bookingId);
-          await require("../services/email.service").sendConfirmationMail(
-            updatedBookingWithUser.user.email,
-            updatedBookingWithUser.user.name,
-            zoomMeeting,
-            require("moment")(booking.dateAndTime).format("DD-MM-YYYY"),
-            require("moment")(booking.dateAndTime).format("HH:mm")
-          );
-        } catch (emailError) {
-          console.error("Error sending confirmation email:", emailError);
-          // Don't fail the request if email fails
+        // Send confirmation email in background (don't block response)
+        const updatedBookingWithUser = await bookingService.getBookingById(bookingId);
+        const userEmail = updatedBookingWithUser?.user?.email;
+        const userName = updatedBookingWithUser?.user?.name || "User";
+        if (userEmail) {
+          require("../services/email.service")
+            .sendConfirmationMail(
+              userEmail,
+              userName,
+              zoomMeeting,
+              require("moment")(booking.dateAndTime).format("DD-MM-YYYY"),
+              require("moment")(booking.dateAndTime).format("HH:mm")
+            )
+            .catch((err) => console.error("Error sending confirmation email:", err));
         }
 
         const confirmedBooking = await bookingService.getBookingById(bookingId);
@@ -151,6 +152,7 @@ const verifyPayment = async (req, res, next) => {
           success: true,
           message: "Payment verified and booking confirmed",
           booking: confirmedBooking,
+          emailSent: !!userEmail,
         });
       } else {
         return res.status(httpStatus.badRequest).json({
@@ -176,10 +178,27 @@ const verifyPayment = async (req, res, next) => {
           orderId: orderId,
         });
 
+        // Send confirmation email in background (don't block response)
+        const updatedBookingWithUser = await bookingService.getBookingById(bookingId);
+        const userEmail = updatedBookingWithUser?.user?.email;
+        const userName = updatedBookingWithUser?.user?.name || "User";
+        if (userEmail) {
+          require("../services/email.service")
+            .sendConfirmationMail(
+              userEmail,
+              userName,
+              zoomMeeting,
+              require("moment")(booking.dateAndTime).format("DD-MM-YYYY"),
+              require("moment")(booking.dateAndTime).format("HH:mm")
+            )
+            .catch((err) => console.error("Error sending confirmation email:", err));
+        }
+
         return res.status(httpStatus.ok).json({
           success: true,
           message: "Payment verified and booking confirmed (dev mode)",
           booking: await bookingService.getBookingById(bookingId),
+          emailSent: !!userEmail,
         });
       } else {
         return res.status(httpStatus.badRequest).json({

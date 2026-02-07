@@ -18,7 +18,11 @@ module.exports = {
   },
   email: {
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: false,
+    requireTLS: true,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
     auth: {
       user: process.env.SMTP_USERNAME,
       pass: process.env.SMTP_PASSWORD,

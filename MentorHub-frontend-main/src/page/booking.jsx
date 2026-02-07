@@ -20,6 +20,7 @@ const Booking = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingService, setLoadingService] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   const getServiceData = async () => {
     setLoadingService(true);
@@ -71,8 +72,8 @@ const Booking = () => {
         
         handlePayment(orderId, async (paymentResponse) => {
           console.log("Payment completed:", paymentResponse);
-          
-          // Verify payment with backend
+          setVerifyingPayment(true);
+
           try {
             const verifyRes = await booking.verifyPayment({
               bookingId: bookingId,
@@ -80,17 +81,25 @@ const Booking = () => {
               orderId: orderId,
               signature: paymentResponse.razorpay_signature,
             });
-            
+
             if (verifyRes?.data?.success) {
               console.log("Payment verified, booking confirmed:", verifyRes.data);
-              navigate("/success");
+              navigate("/success", {
+                state: {
+                  emailSent: verifyRes.data.emailSent,
+                  booking: verifyRes.data.booking,
+                },
+              });
             } else {
+              setVerifyingPayment(false);
               alert("Payment completed but verification failed. Please contact support.");
-              console.error("Payment verification failed:", verifyRes.data);
+              console.error("Payment verification failed:", verifyRes?.data);
             }
           } catch (verifyError) {
+            setVerifyingPayment(false);
             console.error("Error verifying payment:", verifyError);
-            alert("Payment completed but verification failed. Please contact support with payment ID: " + paymentResponse.razorpay_payment_id);
+            const msg = verifyError.response?.data?.message || verifyError.message;
+            alert("Payment completed but verification failed. " + (msg ? msg + ". " : "") + "Please contact support with payment ID: " + paymentResponse.razorpay_payment_id);
           }
         });
       } else {
@@ -173,13 +182,14 @@ const Booking = () => {
             )}
 
             <Button
-              disabled={selectedSlot === null}
+              disabled={selectedSlot === null || verifyingPayment}
               type="primary"
               block
               size="large"
+              loading={verifyingPayment}
               onClick={onBookServiceClick}
             >
-              Book Session
+              {verifyingPayment ? "Verifying payment…" : "Book Session"}
             </Button>
           </Card>
         </div>
